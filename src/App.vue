@@ -1,11 +1,17 @@
 <script setup>
 import { reactive, ref, onMounted  } from 'vue';
 
+const VERSION = 0.3;
+const LAST_UPD = "31.08.2022";
+const REPO = "https://github.com/PaperDevil/shellfolio";
+
+const SPACER = "<br>";
 const message_text = ref("");
 const logi = reactive({count: 0, arr: []});
 let indexing_command = 0;
 let command_history = [];
 let passed_commands = [];
+let clear_log = true;
 const fs = reactive({
   file_count: 1,
   files: {
@@ -46,7 +52,7 @@ const commands = {
     "call": (args) => {
       let idx = 0;
       for (const [key, val] of Object.entries(commands)) {
-        if (val['visibl']) {
+        if (val['visibl'] || args[0] == '-a' || args[0] == '--all') {
           print(`${idx}. ${key} - ${val['help_text']}`);
           idx++;
         }
@@ -105,18 +111,56 @@ const commands = {
   },
   "contact": {
     "help_text": "send me message",
-    "call": () => {
-      print("<a href='https://t.me/ketovx'>Telegram</a>")
-      print("<a href='https://www.instagram.com/ketovx'>Instagram</a>")
-      print("<a href='https://github.com/PaperDevil'>Github</a>")
+    "call": (args) => {
+      print("<a href='https://t.me/ketovx'>🚀 Telegram</a>")
+      print("<a href='https://www.instagram.com/ketovx'>👓 Instagram</a>")
+      print("<a href='https://github.com/PaperDevil'>👽 Github</a>")
       print("Or send me email <a href='mailto: ketov-x@yandex.ru'>ketov-x@yandex.ru<a/>")
+      print("Thanks!")
     },
     "visibl": true
+  },
+  "projects": {
+    "help_text": "Show projects with my participation",
+    "call": (args) => {
+      print("<p style='color: green'>== LILIYA BOT ==</p>")
+      print("1. It is my first production projects.")
+      print("This is a chat bot that provides public services to users.")
+      print("This project was developed by me throughout the year, from 2020 to 2021.")
+      print(SPACER)
+      print("<p style='color: green'>== SVYAZ.IO ==</p>")
+      print("2. My second production project!")
+      print("A huge system for monitoring the health of residents of Tatarstan.")
+      print("I have been developing the backend of this product for more than a year, but the work is not finished yet.")
+      print(">> <a href='https://svyaz.io'>svyaz.io</a>")
+    },
+    "visibl": true
+  },
+  "set_clear_log": {
+    "help_text": "Set rule or clearing the log",
+    "call": (args) => {
+      if (args[0] == '1') {
+        clear_log = true;
+      } else {
+        clear_log = false;
+      }
+    },
+    "visibl": false
+  },
+  "version": {
+    "help_text": "Show current version of the application",
+    "call": (args) => {
+      print(`v${VERSION} at ${LAST_UPD}. code: <a href='${REPO}'>github.com<a/>`)
+    }
   }
 }
 
 function send_command() {
   if (message_text.value.trim()) {
+    if (clear_log) { 
+      logi.arr = [];
+    }
+    print(SPACER); // Need space for next log
     let value = message_text.value.toLowerCase()
     let comline = value.split(' ')
     if (comline[0] in commands) {
@@ -153,7 +197,7 @@ document.addEventListener('keydown', (event) => {
       command_history.push(text)
     } else message_text.value = ""
   } else if (event.code == 'ArrowRight') {
-    autocomplete()
+    autocomplete();
   }
 });
 
@@ -237,8 +281,14 @@ onMounted(() => {
 
 .stdout {
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   width: 100%;
   height: 100%;
+}
+
+.stdout::-webkit-scrollbar {
+  display: none;
 }
 
 .history {
